@@ -1,0 +1,31 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+
+    module = bld.create_ns3_module('orientation', ['mobility'])
+
+    module.source = [
+        'model/orientation-model.cc',
+        'model/constant-orientation-model.cc',
+        'model/velocity-orientation-model.cc',
+        ]		
+    
+    module_test = bld.create_ns3_module_test_library('orientation')
+    module_test.source = [
+        'test/test-constant-orientation.cc',
+        'test/test-velocity-orientation.cc',
+        ]
+    
+    headers = bld(features='ns3header')
+    headers.module = 'orientation'
+    headers.source = [
+        'model/orientation-model.h',
+        'model/constant-orientation-model.h',
+        'model/velocity-orientation-model.h',
+	]
+    
+    if (bld.env['ENABLE_EXAMPLES']):
+        bld.add_subdirs('examples')
+
+    bld.ns3_python_bindings()
+

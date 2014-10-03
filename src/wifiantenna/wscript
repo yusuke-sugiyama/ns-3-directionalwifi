@@ -1,0 +1,34 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+
+    module = bld.create_ns3_module('wifiantenna', ['core', 'antenna'])
+
+    module.source = [
+        'model/wifi-antenna-model.cc',
+        'model/wifi-constant-gain-antenna-model.cc',
+        'model/wifi-cosine-antenna-model.cc',
+        'model/wifi-parabolic-antenna-model.cc',
+        'model/wifi-isotropic-antenna-model.cc',
+        'model/wifi-switched-beam-antenna-model.cc'
+	 ]		
+	 
+    module_test = bld.create_ns3_module_test_library('wifiantenna')
+    module_test.source = [
+        'test/test-angles.cc',
+        'test/test-degrees-radians.cc',
+        'test/test-cosine-antenna.cc',
+        ]
+    
+    headers = bld(features='ns3header')
+    headers.module = 'wifiantenna'
+    headers.source = [
+        'model/wifi-antenna-model.h',
+        'model/wifi-constant-gain-antenna-model.h',
+        'model/wifi-cosine-antenna-model.h',
+        'model/wifi-parabolic-antenna-model.h',
+        'model/wifi-isotropic-antenna-model.h',
+        'model/wifi-switched-beam-antenna-model.h'
+	]
+
+#    bld.ns3_python_bindings()
