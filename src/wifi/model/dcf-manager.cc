@@ -752,7 +752,6 @@ DcfManager::NotifyMaybeCcaBusyStartNow (Time duration)
   NS_LOG_FUNCTION (this << duration);
   MY_DEBUG ("busy start for " << duration);
   UpdateBackoff ();
-  std::cout << "[mark]" << m_lastBusyStart [m_antennaMode] << std::cout;
   m_lastBusyStart [m_antennaMode] = Simulator::Now ();
   m_lastBusyDuration [m_antennaMode] = duration;
 }
