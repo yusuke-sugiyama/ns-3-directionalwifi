@@ -175,8 +175,8 @@ int main (int argc, char *argv[]) {
   double   rate = 0.002;
   string format ("omnet");
 
-  string experiment ("change_node-amount_transmission-rate");
-  string strategy ("csmaca-dataack");
+  string experiment ("dmac");
+  string strategy ("dmac");
   string animFile ("my-wifi-anime.xml");
   string input;
   string runID;
