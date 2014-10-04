@@ -31,7 +31,7 @@ namespace ns3 {
 class WifiSwitchedBeamAntennaModel : public WifiAntennaModel
 {
 public:
-  enum PRIORITIES {
+  enum ANTENNAMODE{
     OMNI           = 0,
     DIRECTIONAL0   = 1,
     DIRECTIONAL90  = 2,
