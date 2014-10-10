@@ -132,6 +132,7 @@ InterferenceHelper::NiChange::NiChange (Time time, double* delta)
 {
   for(int i = 0; i < WifiAntennaModel::NUMBER_OF_ANTENNA_MODES; i++){
     m_delta [i] = delta [i];
+    NS_LOG_DEBUG ("ddd" << m_delta [i]);
   }
 }
 Time
@@ -615,6 +616,9 @@ InterferenceHelper::CalculateSnrPer (Ptr<InterferenceHelper::Event> event)
   NiChanges::iterator startIterator = GetEventPosition (event);
   NiChanges::iterator endIterator = GetEventEndPosition (event);
 
+  std::vector<Time> Vtime;
+  std::vector<double*> Vdb;
+
   for (NiChanges::iterator i = m_niChanges.begin (); i != endIterator; i++)
     {
       if(i == startIterator || i == endIterator){continue;}
@@ -640,16 +644,38 @@ InterferenceHelper::CalculateSnrPer (Ptr<InterferenceHelper::Event> event)
 
       NS_LOG_INFO ("i: " << i->GetTime () << ", start: " << startIterator->GetTime () <<
         "j: " << j->GetTime () << ", end: " << endIterator->GetTime ());
-      if(i->GetTime () > startIterator->GetTime ()&& i->GetTime () < endIterator->GetTime () && j->GetTime () > endIterator->GetTime ()){
+      if(i->GetTime () >= startIterator->GetTime () && i->GetTime () < endIterator->GetTime () && j->GetTime () > endIterator->GetTime ()){
         NS_LOG_DEBUG("[1]i: " << i->GetDelta (m_antennaMode) << " j:" << j->GetDelta (m_antennaMode));
-        AddNiChangeEvent (NiChange (end - NanoSeconds (1), j->GetDelta ()));
-        AddNiChangeEvent (NiChange (end + NanoSeconds (1), i->GetDelta ()));
-      }else if(i->GetTime () < startIterator->GetTime () && j->GetTime () > endIterator->GetTime ()){
+        //        AddNiChangeEvent (NiChange (end - NanoSeconds (1), j->GetDelta ()));
+        //        AddNiChangeEvent (NiChange (end + NanoSeconds (1), i->GetDelta ()));
+        double *rxPowerDbmi = new double[WifiAntennaModel::NUMBER_OF_ANTENNA_MODES];
+        double *rxPowerDbmj = new double[WifiAntennaModel::NUMBER_OF_ANTENNA_MODES];
+        for(int k = 0; k < WifiAntennaModel::NUMBER_OF_ANTENNA_MODES; k++){
+          rxPowerDbmi [k] = i->GetDelta (k);
+          rxPowerDbmj [k] = j->GetDelta (k);
+        }
+        Vtime.push_back (end - NanoSeconds (1));
+        Vdb.push_back (rxPowerDbmj);
+        Vtime.push_back (end + NanoSeconds (1));
+        Vdb.push_back (rxPowerDbmi);
+      }else if(i->GetTime () <= startIterator->GetTime () && j->GetTime () > endIterator->GetTime ()){
         NS_LOG_DEBUG("[2]i: " << i->GetDelta (m_antennaMode) << " j:" << j->GetDelta (m_antennaMode));
-        AddNiChangeEvent (NiChange (end - NanoSeconds (1), j->GetDelta ()));
-        AddNiChangeEvent (NiChange (end + NanoSeconds (1), i->GetDelta ()));
+        double *rxPowerDbmi = new double[WifiAntennaModel::NUMBER_OF_ANTENNA_MODES];
+        double *rxPowerDbmj = new double[WifiAntennaModel::NUMBER_OF_ANTENNA_MODES];
+        for(int k = 0; k < WifiAntennaModel::NUMBER_OF_ANTENNA_MODES; k++){
+          rxPowerDbmi [k] = i->GetDelta (k);
+          rxPowerDbmj [k] = j->GetDelta (k);
+        }
+        Vtime.push_back (end + NanoSeconds (1));
+        Vdb.push_back (rxPowerDbmi);
+        Vtime.push_back (end - NanoSeconds (1));
+        Vdb.push_back (rxPowerDbmj);
       }
     }
+
+  for (unsigned int i = 0; i < Vtime.size (); i++){
+    AddNiChangeEvent (NiChange (Vtime [i], Vdb [i]));
+  }
 
   // sum noise
   NiChanges::iterator nowIterator = GetPosition (start);
@@ -672,6 +698,11 @@ InterferenceHelper::CalculateSnrPer (Ptr<InterferenceHelper::Event> event)
 
   NiChanges ni;
   double noiseInterferenceW = CalculateNoiseInterferenceW (event, &ni);
+  NS_LOG_DEBUG ("firstPower=" << m_firstPower);
+  for (NiChanges::iterator i = m_niChanges.begin (); i != m_niChanges.end (); i++)
+    {
+      NS_LOG_DEBUG ("[deleta]=" << i->GetDelta (m_antennaMode));
+    }
   double snr = CalculateSnr (event->GetRxPowerW (m_antennaMode),
                              noiseInterferenceW,
                              event->GetPayloadMode ());
@@ -682,7 +713,7 @@ InterferenceHelper::CalculateSnrPer (Ptr<InterferenceHelper::Event> event)
   double per = CalculatePer (event, &ni);
 
   // sum noise
-
+  NS_LOG_DEBUG("[firstPower] "<< m_firstPower);
   endIterator = GetEventEndPosition (event);
   endIterator += 1;
   for (NiChanges::iterator i = m_niChanges.begin (); i != endIterator; i++)
@@ -695,7 +726,9 @@ InterferenceHelper::CalculateSnrPer (Ptr<InterferenceHelper::Event> event)
   NS_LOG_DEBUG ("firstPower=" << m_firstPower);
   for (NiChanges::iterator i = m_niChanges.begin (); i != m_niChanges.end (); i++)
     {
-      NS_LOG_DEBUG ("deleta=" << i->GetDelta (m_antennaMode));
+      for(int m = 0 ; m < 5; m++){
+        NS_LOG_DEBUG ("deleta=" << i->GetDelta (m));
+      }
     }
   NS_LOG_DEBUG ("#####################################");
 
@@ -762,7 +795,7 @@ InterferenceHelper::GetEventEndPosition (Ptr<InterferenceHelper::Event> event)
         }
     }
     if (j == WifiAntennaModel::NUMBER_OF_ANTENNA_MODES){
-      NS_LOG_DEBUG("[mark2]" << i->GetDelta (m_antennaMode));
+      NS_LOG_DEBUG("[mark2]" <<i->GetTime () << i->GetDelta (m_antennaMode));
       return i;
     }
 
