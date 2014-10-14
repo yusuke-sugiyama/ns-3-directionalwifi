@@ -130,7 +130,7 @@ Receiver::GetTypeId (void)
                    MakeUintegerAccessor (&Receiver::m_port),
                    MakeUintegerChecker<uint32_t>())
     .AddAttribute ("NumPackets", "Total number of packets to recv.",
-                   UintegerValue (1000),
+                   UintegerValue (0),
                    MakeUintegerAccessor (&Receiver::m_numPkts),
                    MakeUintegerChecker<uint32_t>(0))
     .AddTraceSource ("Rx", "Receive data packet",
