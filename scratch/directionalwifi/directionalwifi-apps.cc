@@ -1,3 +1,30 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Authors: Joe Kopena <tjkopena@cs.drexel.edu>
+ *
+ * These applications are used in the WiFi Distance Test experiment,
+ * described and implemented in test02.cc.  That file should be in the
+ * same place as this file.  The applications have two very simple
+ * jobs, they just generate and receive packets.  We could use the
+ * standard Application classes included in the NS-3 distribution.
+ * These have been written just to change the behavior a little, and
+ * provide more examples.
+ *
+ */
+
 #include <ostream>
 
 #include "ns3/core-module.h"
@@ -34,6 +61,10 @@ Sender::GetTypeId (void)
                    StringValue ("ns3::ConstantRandomVariable[Constant=1]"),
                    MakePointerAccessor (&Sender::m_interval),
                    MakePointerChecker <RandomVariableStream>())
+    .AddAttribute ("Stream", "Random Stream.",
+                   StringValue ("ns3::UniformRandomVariable[Stream=-1]"),
+                   MakePointerAccessor (&Sender::m_random),
+                   MakePointerChecker <RandomVariableStream>())
     .AddTraceSource ("Tx", "A new packet is created and is sent",
                      MakeTraceSourceAccessor (&Sender::m_txTrace))
   ;
@@ -46,6 +77,7 @@ Sender::Sender()
   NS_LOG_FUNCTION_NOARGS ();
   m_interval = CreateObject<ConstantRandomVariable> ();
   m_socket = 0;
+  m_random = CreateObject<UniformRandomVariable> ();
 }
 
 Sender::~Sender()
@@ -106,11 +138,11 @@ void Sender::SendPacket ()
 
   // Report the event to the trace.
   m_txTrace (packet);
-
-
-  m_sendEvent = Simulator::Schedule (Seconds (m_interval->GetValue ()),
-				     &Sender::SendPacket, this);
-
+  double interval = m_interval->GetValue ();
+  double logval = -log(m_random->GetValue());
+  Time nextTxTime = Seconds (interval * logval);
+  NS_LOG_INFO("nextTime:" << nextTxTime << " in:" << interval << " log:" << logval);
+  m_sendEvent = Simulator::Schedule (nextTxTime, &Sender::SendPacket, this);
 }
 
 

@@ -175,8 +175,8 @@ int main (int argc, char *argv[]) {
   double   rate = 0.002;
   string format ("omnet");
 
-  string experiment ("dmac");
-  string strategy ("dmac");
+  string experiment ("change_node-amount_transmission-rate");
+  string strategy ("csmaca-dataack");
   string animFile ("my-wifi-anime.xml");
   string input;
   string runID;
@@ -243,20 +243,11 @@ int main (int argc, char *argv[]) {
   MobilityHelper mobility;
   Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator>();
   for(int i = 0; i < nodeAmount; i++){
-    positionAlloc->Add (Vector (i*3, distance * i, 0.0)); 
+    positionAlloc->Add (Vector (0, distance * i, 0.0)); 
   }
 
   mobility.SetPositionAllocator (positionAlloc);
   mobility.Install (nodes);
-
-  /* DSR */
-  /*
-  DsrMainHelper dsrMain;
-  InternetStackHelper internet;
-  DsrHelper dsr;
-  internet.Install (nodes);
-  dsrMain.Install (dsr, nodes);
-  */
 
   /* AODV */
   AodvHelper aodv;
@@ -316,13 +307,10 @@ int main (int argc, char *argv[]) {
   Config::Set (strSourceSender1 + "Interval", StringValue (rateSyntax));
   Config::Set (strSourceSender1 + "PacketSize", UintegerValue (1500));
   Config::Set (strSourceSender1 + "Destination", Ipv4AddressValue ("192.168.0.1"));
-
   Config::Set (strSourceSender2 + "Interval", StringValue (rateSyntax));
   Config::Set (strSourceSender2 + "PacketSize", UintegerValue (1500));
   Config::Set (strSourceSender2 + "Destination", Ipv4AddressValue (EndAddress.c_str()));
-  
-  //  Config::Set (numPacketSyntax , UintegerValue (10100));
-  Config::Set ("/NodeList/2/ApplicationList/*/$Receiver/NumPackets" , UintegerValue (10100));
+  Config::Set ("/NodeList/3/ApplicationList/*/$Receiver/NumPackets" , UintegerValue (1100));
 
   //------------------------------------------------------------
   //-- Setup stats and data collection
